@@ -3,25 +3,29 @@ import pystray
 from PIL import Image
 import tkinter as tk
 
+class WindowsReminder():
+    def __init__(self):
+        self.window = tk.Tk()
+        self.window.title("Title")
 
+    def quit_window(self, icon, item):
+        icon.stop()
+        self.window.destroy()
 
-window = tk.Tk()
-window.title("Title")
+    def show_window(self, icon, item):
+        icon.stop()
+        self.window.after(0, self.window.deiconify)
 
-def quit_window(icon, item):
-    icon.stop()
-    window.destroy()
+    def withdraw_window(self):
+        self.window.withdraw()
+        image = Image.open("icon.ico")
+        menu = (item('Show', self.show_window), item('Quit', self.quit_window))
+        icon = pystray.Icon("name", image, "title", menu)
+        icon.run()
 
-def show_window(icon, item):
-    icon.stop()
-    window.after(0,window.deiconify)
+    def startWindows(self):
+        self.window.protocol('WM_DELETE_WINDOW', self.withdraw_window)
+        self.window.mainloop()
 
-def withdraw_window():
-    window.withdraw()
-    image = Image.open("icon.ico")
-    menu = (item('Quit', quit_window), item('Show', show_window))
-    icon = pystray.Icon("name", image, "title", menu)
-    icon.run()
-
-window.protocol('WM_DELETE_WINDOW', withdraw_window)
-window.mainloop()
+zet = WindowsReminder()
+zet.startWindows()
