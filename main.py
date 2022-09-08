@@ -1,7 +1,6 @@
 import pystray
 import tkinter as tk
-import threadingNotifications
-import win10toast
+import notifications
 from threading import Thread
 from pystray import MenuItem as item
 from PIL import Image
@@ -9,7 +8,7 @@ from PIL import Image
 class WindowsReminder():
 
     def __init__(self):
-        self.notifications = threadingNotifications.Notifications()
+        self.notifications = notifications.Notifications()
         self.window = tk.Tk()
         self.window.title("Title")
         self.frameAccount = tk.Frame(master=self.window)
@@ -32,9 +31,6 @@ class WindowsReminder():
         self.buttonEnter.pack()
         self.lbl_Status.grid(row=6, column=0, sticky=tk.E)
         self.lbl_StatusData.grid(row=6, column=1)
-
-    # def otp(self, title='title', message='net'):
-    #     win10toast.ToastNotifier().show_toast(title, message)
 
     def quit_window(self, icon, item):
         icon.stop()
