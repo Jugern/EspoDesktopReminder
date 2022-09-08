@@ -1,6 +1,7 @@
 import pystray
 import tkinter as tk
 import notifications
+import threading
 from threading import Thread
 from pystray import MenuItem as item
 from PIL import Image
@@ -38,20 +39,45 @@ class WindowsReminder():
 
     def show_window(self, icon, item):
         icon.stop()
-        self.thm = Thread(target=self.notifications.otp, args=('tut', 'netut',))
         self.window.after(0, self.window.deiconify)
-        self.thm.start()
+
+    def noti(self, item):
+        zad='rex'
+        lock = threading.Lock()
+        lock.acquire()
+        try:
+            self.crea = WindowsNotifications()
+            self.thm = Thread(target=self.notifications.otp, args=('tut', 'netut',))
+            self.thw = Thread(target=self.crea.createNewNotifications, args=(f'{zad}',))
+            self.thw.start()
+            self.thm.start()
+        finally:
+            lock.release()
 
     def withdraw_window(self):
         self.window.withdraw()
         image = Image.open("icon.ico")
-        menu = (item('Show', self.show_window), item('Quit', self.quit_window))
+        menu = (item('Show', self.show_window), item('noti', self.noti), item('Quit', self.quit_window))
         icon = pystray.Icon("name", image, "title", menu)
         icon.run()
 
     def startWindows(self):
         self.window.protocol('WM_DELETE_WINDOW', self.withdraw_window)
         self.window.mainloop()
+
+class WindowsNotifications():
+
+    def createNewNotifications(self, text='ZAD'):
+        self.windowNoti = tk.Tk()
+        self.windowNoti.title("Title")
+        self.frame = tk.Frame(master=self.windowNoti)
+        self.labelExample = tk.Label(master=self.frame, text=f'{text}', width=100, height=30)
+        self.frame.pack()
+        self.labelExample.pack()
+        self.windowNoti.mainloop()
+
+    def delNewNotifications(self):
+        self.windowNoti.quit()
 
 zet = WindowsReminder()
 zet.startWindows()
