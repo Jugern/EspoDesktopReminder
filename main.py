@@ -33,6 +33,16 @@ class WindowsReminder():
         self.lbl_Status.grid(row=6, column=0, sticky=tk.E)
         self.lbl_StatusData.grid(row=6, column=1)
 
+    def createNewNotifications(self, text='ZAD'):
+        self.windowNoti = tk.Tk()
+        self.windowNoti.title("Title")
+        self.frame = tk.Frame(master=self.windowNoti)
+        self.labelExample = tk.Label(master=self.frame, text=f'{text}', width=100, height=30)
+        self.frame.pack()
+        self.labelExample.pack()
+        self.windowNoti.mainloop()
+        self.windowNoti.quit()
+
     def quit_window(self, icon, item):
         icon.stop()
         self.window.destroy()
@@ -42,17 +52,15 @@ class WindowsReminder():
         self.window.after(0, self.window.deiconify)
 
     def noti(self, item):
-        zad='rex'
         lock = threading.Lock()
         lock.acquire()
         try:
-            self.crea = WindowsNotifications()
             self.thm = Thread(target=self.notifications.otp, args=('tut', 'netut',))
-            self.thw = Thread(target=self.crea.createNewNotifications, args=(f'{zad}',))
-            self.thw.start()
             self.thm.start()
         finally:
+            self.createNewNotifications()
             lock.release()
+            self.windowNoti.quit()
 
     def withdraw_window(self):
         self.window.withdraw()
@@ -64,20 +72,6 @@ class WindowsReminder():
     def startWindows(self):
         self.window.protocol('WM_DELETE_WINDOW', self.withdraw_window)
         self.window.mainloop()
-
-class WindowsNotifications():
-
-    def createNewNotifications(self, text='ZAD'):
-        self.windowNoti = tk.Tk()
-        self.windowNoti.title("Title")
-        self.frame = tk.Frame(master=self.windowNoti)
-        self.labelExample = tk.Label(master=self.frame, text=f'{text}', width=100, height=30)
-        self.frame.pack()
-        self.labelExample.pack()
-        self.windowNoti.mainloop()
-
-    def delNewNotifications(self):
-        self.windowNoti.quit()
 
 zet = WindowsReminder()
 zet.startWindows()
