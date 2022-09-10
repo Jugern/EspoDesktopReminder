@@ -33,7 +33,7 @@ class WindowsReminder():
         self.lbl_Status.grid(row=6, column=0, sticky=tk.E)
         self.lbl_StatusData.grid(row=6, column=1)
 
-    def createNewNotifications(self, text='ZAD'):
+    def createNewNotifications(self, text='Text'):
         self.windowNoti = tk.Tk()
         self.windowNoti.title("Title")
         self.frame = tk.Frame(master=self.windowNoti)
