@@ -2,13 +2,17 @@ import pystray
 import tkinter as tk
 import notifications
 import threading
+import connectServer
 from threading import Thread
+from dotenv import load_dotenv
 from pystray import MenuItem as item
 from PIL import Image
 
 class WindowsReminder():
-
     def __init__(self):
+        dotenv_path = os.path.join(os.path.dirname(__file__), '.env')
+        if os.path.exists(dotenv_path):
+            load_dotenv(dotenv_path)
         self.notifications = notifications.Notifications()
         self.window = tk.Tk()
         self.window.title("Title")
@@ -32,6 +36,7 @@ class WindowsReminder():
         self.buttonEnter.pack()
         self.lbl_Status.grid(row=6, column=0, sticky=tk.E)
         self.lbl_StatusData.grid(row=6, column=1)
+        # self.ping = connectServer.ConnectionsBase()
 
     def createNewNotifications(self, text='Text'):
         self.windowNoti = tk.Tk()
@@ -43,6 +48,9 @@ class WindowsReminder():
         self.windowNoti.mainloop()
         self.windowNoti.quit()
 
+    def checkConnection(self):
+        self.lbl_StatusData.config(text='Новый текст')
+
     def quit_window(self, icon, item):
         icon.stop()
         self.window.destroy()
@@ -50,6 +58,7 @@ class WindowsReminder():
     def show_window(self, icon, item):
         icon.stop()
         self.window.after(0, self.window.deiconify)
+        self.izmenenie()
 
     def noti(self, item):
         lock = threading.Lock()
