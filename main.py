@@ -2,9 +2,10 @@ import pystray
 import tkinter as tk
 import notifications
 import threading
+import os
 import connectServer
 from threading import Thread
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from pystray import MenuItem as item
 from PIL import Image
 
@@ -26,8 +27,13 @@ class WindowsReminder():
         self.frameStatus = tk.Frame(master=self.window)
         self.lbl_Status = tk.Label(master=self.frameStatus, text='Статус соединения :', width=25, height=2)
         self.lbl_StatusData = tk.Label(master=self.frameStatus, text='отключено', width=10, height=2)
+        self.canvas = tk.Canvas(master=self.frameStatus, height=10, width=10)
         self.frameAccount.pack(fill=tk.BOTH, expand=True)
         self.frameStatus.pack(fill=tk.BOTH, expand=True)
+        self.oval_id = self.canvas.create_oval(
+            3, 3, 10, 10, outline="red",
+            fill="red", width=4,
+        )
         self.lbl_Account.pack()
         self.entryLogin.pack()
         self.lbl_Login.pack()
@@ -35,8 +41,8 @@ class WindowsReminder():
         self.lbl_Password.pack()
         self.buttonEnter.pack()
         self.lbl_Status.grid(row=6, column=0, sticky=tk.E)
-        self.lbl_StatusData.grid(row=6, column=1)
-        # self.ping = connectServer.ConnectionsBase()
+        self.lbl_StatusData.grid(row=6, column=2)
+        self.canvas.grid(row=6, column=1)
 
     def createNewNotifications(self, text='Text'):
         self.windowNoti = tk.Tk()
@@ -58,7 +64,8 @@ class WindowsReminder():
     def show_window(self, icon, item):
         icon.stop()
         self.window.after(0, self.window.deiconify)
-        self.izmenenie()
+        self.canvas.itemconfig(self.oval_id, outline="green", fill='green')
+        # self.izmenenie()
 
     def noti(self, item):
         lock = threading.Lock()

@@ -4,9 +4,8 @@ import json
 from contextlib import closing
 
 class ConnectionsBase():
-    def __init__(self, addres, port):
-        self.addres = addres
-        self.port = port
+    def __init__(self):
+        pass
 
 class CheckConnection(ConnectionsBase):
     def check(self):
@@ -17,7 +16,9 @@ class CheckConnection(ConnectionsBase):
                 return "Port is not open"
 
 class ClientSocket(ConnectionsBase):
-    def __init__(self):
+    def __init__(self, addres='localhost', port=19000):
+        self.addres = addres
+        self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_address = (self.addres, self.port)
         print('Подключено к {} порт {}'.format(*self.server_address))
@@ -41,5 +42,5 @@ class ClientSocket(ConnectionsBase):
             print('Закрываем сокет')
             self.sock.close()
 
-zapusk = ClientSocket()
-zapusk.connections()
+# zapusk = ClientSocket()
+# zapusk.connections(addres='localhost', port=19000)
