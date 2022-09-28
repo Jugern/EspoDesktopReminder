@@ -70,8 +70,6 @@ class Ui_Dialog(object):
     def paintEvent(self, event):
         painter = QPainter()
         painter.begin(self)
-        # painter.setPen(QPen(Qt.green,  5, Qt.SolidLine))
-        # painter.setBrush(QBrush(Qt.green, Qt.SolidPattern))
-        painter.drawEllipse( )
+        # painter.drawEllipse( )
         painter.drawEllipse(130, 235, 10, 10)
         painter.end()
