@@ -23,9 +23,7 @@ class WindowsReminder():
             self.thm = Thread(target=ntf.otp, args=(str(nachalo), str(text)))
             self.thm.start()
         finally:
-            # self.createNewNotifications(nachalo, text)
             lock.release()
-            # self.windowNoti.quit()
 
 class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, WindowsReminder):
 
