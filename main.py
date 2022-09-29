@@ -16,11 +16,11 @@ from PIL import Image
 
 class WindowsReminder():
 
-    def noti(self, nachalo='tut', text='netut'):
+    def noti(self, nachalo='ошибка', text='нет текста'):
         lock = threading.Lock()
         lock.acquire()
         try:
-            self.thm = Thread(target=ntf.otp, args=(str(nachalo), str(text)))
+            self.thm = Thread(target=ntf.otp, args=(self, nachalo, text))
             self.thm.start()
         finally:
             lock.release()
@@ -30,6 +30,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, WindowsReminder):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
+
 
     def closeEvent(self, event):#create tray
         self.icon = QIcon("icon.ico")
@@ -41,7 +42,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, WindowsReminder):
         self.example.triggered.connect(self.show)
         self.menu.addAction(self.example)
         self.reminder = QAction("Reminder")
-        self.reminder.triggered.connect(self.noti)
+        self.reminder.triggered.connect(lambda: self.noti('fooData', 'fooNotData'))
         self.menu.addAction(self.reminder)
         self.quit = QAction("Quit")
         self.quit.triggered.connect(app.quit)
