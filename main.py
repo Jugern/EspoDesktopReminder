@@ -1,10 +1,7 @@
-import pystray
-import tkinter as tk
 from notifications import Notifications as ntf
-import notifications
 import threading, os, sched, time, schedule
 import connectServer
-import sys
+import sys, random, secrets
 from PyQt6 import QtWidgets
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
@@ -14,16 +11,26 @@ from threading import Thread
 from pystray import MenuItem as item
 from PIL import Image
 
-class WindowsReminder():
+class WindowsReminder(ntf):
+
+    def print_some_times(self):
+        schedule.every(10).seconds.do(self.otp, title='Raz', message='soobshenie')
+        while True:
+            schedule.run_pending()
+            time.sleep(1)
 
     def noti(self, nachalo='ошибка', text='нет текста'):
         lock = threading.Lock()
         lock.acquire()
         try:
-            self.thm = Thread(target=ntf.otp, args=(self, nachalo, text))
-            self.thm.start()
+            self.nth = Thread(target=self.print_some_times)
+            self.nth.start()
+            # self.thm = Thread(target=ntf.otp, args=(self, nachalo, text))
+            # self.thm.start()
         finally:
             lock.release()
+
+# class ConnecToWindows():
 
 class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, WindowsReminder):
 
@@ -41,17 +48,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, WindowsReminder):
         self.example = QAction("Show")
         self.example.triggered.connect(self.show)
         self.menu.addAction(self.example)
+        self.color = QAction("Color")
+        self.color.triggered.connect(lambda: self.colorConnect())
+        self.menu.addAction(self.color)
         self.reminder = QAction("Reminder")
-        self.reminder.triggered.connect(lambda: self.noti('fooData', 'fooNotData'))
+        self.reminder.triggered.connect(lambda: self.noti())
         self.menu.addAction(self.reminder)
         self.quit = QAction("Quit")
         self.quit.triggered.connect(app.quit)
         self.menu.addAction(self.quit)
         self.tray.setContextMenu(self.menu)
 
+    def colorConnect(self, status='не подключен', color='yellow'):
+        self.label_2.clear()
+        self.label_2.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-weight:600; color:{color};\">{status}</span></p></body></html>")
+
 if __name__=="__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)
     window = MainWindow()
+    # window.notifWindows()
     window.show()
     app.exec()
