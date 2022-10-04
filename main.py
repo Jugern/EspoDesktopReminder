@@ -57,7 +57,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
 
     def print_some_times(self, title='Raz', message='soobshenie'):
         schedule.every(10).seconds.do(self.connect).tag('friend')
-        schedule.every(20).seconds.do(self.colorConnect).tag('friend')
+        schedule.every(10).seconds.do(self.colorConnect).tag('friend')
         schedule.every(60).seconds.do(self.recheckconnect)
         while True:
             schedule.run_pending()
@@ -122,11 +122,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         except:
             print('tut oshibka')
 
+    @catch_exceptions(cancel_on_failure=True)
     def recheckconnect(self):
         try:
             if self.serverCheckStatus == 0:
                 schedule.every(self.schedConnectTimer).seconds.do(self.connect).tag('friend')
                 schedule.every(self.schedColorTimer).seconds.do(self.colorConnect).tag('friend')
+            if self.serverCheckStatus == 1:
+                pass
         except:
             print('Ошибка в планировщике')
 if __name__=="__main__":

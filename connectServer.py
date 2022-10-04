@@ -16,7 +16,7 @@ class ClientSocket():
         except:
             self.serverCheckStatus = 0
             self.serverCheckErrors = 'невозможно подключиться'
-            self.colors = 'blue'
+            self.colors = 'red'
         try:
             mess = {"data": {"hostname": "192.168.7.6", "ipaddress": "192.168.7.6", "comment": "АдминистраторСервер",
                              "command": "discovery"}}
