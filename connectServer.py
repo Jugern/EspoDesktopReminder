@@ -1,12 +1,12 @@
 import socket
-# import sys
 import json
 from contextlib import closing
 
 class ClientSocket():
-    def connectClientSocket(self, addres='localhost', port=19000):
-        self.addres = addres
-        self.port = port
+    def connectClientSocket(self, data={'0':'0'}):
+    # def connectClientSocket(self, addres='localhost', port=19000, data={'0':'0'}):
+        # self.addres = addres
+        # self.port = port
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_address = (self.addres, self.port)
         self.serverCheckStatus = 1
@@ -18,9 +18,9 @@ class ClientSocket():
             self.serverCheckErrors = 'невозможно подключиться'
             self.colors = 'red'
         try:
-            mess = {"data": {"hostname": "192.168.7.6", "ipaddress": "192.168.7.6", "comment": "АдминистраторСервер",
+            mess = {"0": {"login": 'data', "ipaddress": "192.168.7.6", "comment": "АдминистраторСервер",
                              "command": "discovery"}}
-            raw_data = json.dumps(mess).encode()
+            raw_data = json.dumps(self.dataToConnect).encode()
             self.sock.sendall(raw_data)
             amount_received = 0
             amount_expected = 12

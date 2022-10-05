@@ -34,10 +34,32 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
         self.serverCheckStatus = 0
-        self.serverCheckErrors = str('not connect')
-        self.colors='blue'
-        self.schedConnectTimer=15
-        self.schedColorTimer=15
+        self.startCheck = 0
+        self.serverCheckErrors = str('отключенно')
+        self.colors='red'
+        self.dataToConnect = {'login':0, 'loginAPI':0, 'addres':0, 'port':0}
+        self.startButton.clicked.connect(lambda: self.start())
+        self.resetButton.clicked.connect(lambda: self.stop())
+        self.resetButton.setEnabled(False)
+
+    def start(self):
+        self.addres = self.lineAddress.text()
+        self.port = self.linePort.text()
+        self.login = self.lineLogin.text()
+        self.loginAPI = self.lineLoginAPI.text()
+        try:
+            self.port = int(self.port)
+        except ValueError:
+            self.colorDef(text='неправильные данные', color='red')
+            return
+        if self.validations():
+            print('ne proshlo')
+            return
+        self.startCheck = 1
+        self.colorDef(text='соединение', color='#003942')
+        self.notifications_and_serversocket()
+        self.startButton.setEnabled(False)
+        self.resetButton.setEnabled(True)
 
     def catch_exceptions(cancel_on_failure=False):
         def catch_exceptions_decorator(job_func):
@@ -53,11 +75,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
             return wrapper
         return catch_exceptions_decorator
 
-    # status = 'не подключен', color = secrets.token_hex(3)
-
-    def print_some_times(self, title='Raz', message='soobshenie'):
-        schedule.every(10).seconds.do(self.connect).tag('friend')
-        schedule.every(10).seconds.do(self.colorConnect).tag('friend')
+    def print_some_times(self):
+        schedule.every(10).seconds.do(self.connect).tag('start')
+        schedule.every(10).seconds.do(self.colorConnect).tag('start')
         schedule.every(60).seconds.do(self.recheckconnect)
         while True:
             schedule.run_pending()
@@ -67,7 +87,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         lock = threading.Lock()
         lock.acquire()
         try:
-            self.nth = Thread(target=self.print_some_times, args=('nachalo', 'text'))
+            self.nth = Thread(target=self.print_some_times)
             self.nth.start()
         finally:
             lock.release()
@@ -81,23 +101,14 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.example = QAction("Show")
         self.example.triggered.connect(self.show)
         self.menu.addAction(self.example)
-        self.color = QAction("Color")
-        self.color.triggered.connect(lambda: self.colorConnect())
-        self.menu.addAction(self.color)
-        self.newWindows = QAction("Windows")
-        self.newWindows.triggered.connect(lambda: self.news(text='tut', descriptions='netut', link='uru'))
-        # self.newWindows.triggered.connect(lambda: self.newWindo())
-        self.menu.addAction(self.newWindows)
-        self.reminder = QAction("Reminder")
-        self.reminder.triggered.connect(lambda: self.notifications_and_serversocket())
-        self.menu.addAction(self.reminder)
-        self.socketStart = QAction("socketStart")
-        self.socketStart.triggered.connect(lambda: self.connect())
-        self.menu.addAction(self.socketStart)
         self.quit = QAction("Quit")
         self.quit.triggered.connect(app.quit)
         self.menu.addAction(self.quit)
         self.tray.setContextMenu(self.menu)
+
+    def colorDef(self, text='ошибка', color='red'):
+        self.label_2.setText(f"{text}")
+        self.label_2.setStyleSheet("QLabel {color: "+f'{color}'+"}")
 
     @catch_exceptions(cancel_on_failure=True)
     def colorConnect(self):
@@ -114,8 +125,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.w2.show()
 
     @catch_exceptions(cancel_on_failure=True)
-    def connect(self, addres='localhost', port=19000):
-        super().connectClientSocket(addres=addres, port=port)
+    def connect(self):
+        super().connectClientSocket()
         try:
             if self.serverCheckStatus == 0:
                 return schedule.CancelJob
@@ -126,12 +137,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
     def recheckconnect(self):
         try:
             if self.serverCheckStatus == 0:
-                schedule.every(self.schedConnectTimer).seconds.do(self.connect).tag('friend')
-                schedule.every(self.schedColorTimer).seconds.do(self.colorConnect).tag('friend')
-            if self.serverCheckStatus == 1:
-                pass
+                schedule.clear('start')
+                self.colorDef(text='соединение', color='#003942')
+                schedule.every(10).seconds.do(self.connect).tag('start')
+                schedule.every(10).seconds.do(self.colorConnect).tag('start')
         except:
-            print('Ошибка в планировщике')
+            schedule.clear('start')
+            self.colors = 'red'
+            self.serverCheckErrors = 'Ошибка в планировщике'
+            self.colorDef()
+
+    def validations(self):
+        pass
+
+    def stop(self):
+        self.startButton.setEnabled(True)
+        self.resetButton.setEnabled(False)
+        self.colorDef(text='отключенно', color='red')
+        schedule.clear()
+
 if __name__=="__main__":
     app = QtWidgets.QApplication(sys.argv)
     app.setQuitOnLastWindowClosed(False)

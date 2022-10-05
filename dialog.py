@@ -36,7 +36,8 @@ class Ui_Dialog(object):
         self.lineLoginAPI.setStyleSheet("border: 1px solid black; \n"
 "border-radius:5px;")
         self.lineLoginAPI.setText("")
-        self.lineLoginAPI.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+        self.lineLoginAPI.setEchoMode(QtWidgets.QLineEdit.EchoMode.PasswordEchoOnEdit)
+        # self.lineLoginAPI.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
         self.lineLoginAPI.setAlignment(QtCore.Qt.AlignmentFlag.AlignCenter)
         self.lineLoginAPI.setPlaceholderText("Login API")
         self.lineLoginAPI.setCursorMoveStyle(QtCore.Qt.CursorMoveStyle.LogicalMoveStyle)
@@ -81,7 +82,7 @@ class Ui_Dialog(object):
 
     def retranslateUi(self, Dialog):
         _translate = QtCore.QCoreApplication.translate
-        Dialog.setWindowTitle(_translate("Dialog", "Dialog"))
+        Dialog.setWindowTitle(_translate("Dialog", "EDR"))
         self.lineAddress.setToolTip(_translate("Dialog", "<html><head/><body><p style=\"border: 1px solid #7a7b7e; border-radius:5px; text-align: center;\"><br/></p></body></html>"))
         self.lineAddress.setPlaceholderText(_translate("Dialog", "ip address"))
         self.label.setText(_translate("Dialog", "<html><head/><body><p><span style=\" font-size:9pt; font-weight:600;\">connection:</span></p></body></html>"))
