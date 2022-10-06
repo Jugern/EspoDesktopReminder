@@ -47,14 +47,9 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.port = self.linePort.text()
         self.login = self.lineLogin.text()
         self.loginAPI = self.lineLoginAPI.text()
-        try:
-            self.port = int(self.port)
-        except ValueError:
-            self.colorDef(text='неправильные данные', color='red')
-            return
         if self.validations():
             print('ne proshlo')
-            return
+            return False
         self.startCheck = 1
         self.colorDef(text='соединение', color='#003942')
         self.notifications_and_serversocket()
@@ -148,7 +143,33 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
             self.colorDef()
 
     def validations(self):
-        pass
+        if self.validationsIP4():
+            self.colorDef(text='Ошибка ip адреса', color='red')
+            return True
+        try:
+            self.port = int(self.port)
+            if 65534 > self.port > 0:
+                pass
+            else:
+                self.colorDef(text='неправильный порт', color='red')
+                return True
+        except ValueError:
+            self.colorDef(text='неправильный порт', color='red')
+            return True
+        # try:
+        #     if 63 > len(self.login) > 0:
+        #         print('proshlo')
+        #     else:
+        #         return True
+        # except:
+        #     return True
+        # try:
+        #     if 125 > len(self.loginAPI) > 0:
+        #         print('proshlo API')
+        #     else:
+        #         return True
+        # except:
+        #     return True
 
     def stop(self):
         self.startButton.setEnabled(True)

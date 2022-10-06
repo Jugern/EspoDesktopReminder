@@ -3,14 +3,11 @@ import json
 from contextlib import closing
 
 class ClientSocket():
-    def connectClientSocket(self, data={'0':'0'}):
-    # def connectClientSocket(self, addres='localhost', port=19000, data={'0':'0'}):
-        # self.addres = addres
-        # self.port = port
+    def connectClientSocket(self, dataToConnect={'0':'0'}):
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server_address = (self.addres, self.port)
         self.serverCheckStatus = 1
-        # print('Подключено к {} порт {}'.format(*self.server_address))
+        self.sock.settimeout(3)
         try:
             self.sock.connect(self.server_address)
         except:
@@ -18,8 +15,6 @@ class ClientSocket():
             self.serverCheckErrors = 'невозможно подключиться'
             self.colors = 'red'
         try:
-            mess = {"0": {"login": 'data', "ipaddress": "192.168.7.6", "comment": "АдминистраторСервер",
-                             "command": "discovery"}}
             raw_data = json.dumps(self.dataToConnect).encode()
             self.sock.sendall(raw_data)
             amount_received = 0
@@ -50,6 +45,16 @@ class ClientSocket():
                 return "Port is open"
             else:
                 return "Port is not open"
+
+    def validationsIP4(self):
+        if self.addres=='localhost':
+            return False
+        try:
+            socket.inet_aton(self.addres)
+            return False
+            # legal
+        except:
+            return True
 
 # zapusk = ClientSocket()
 # zapusk.connections(addres='localhost', port=19000)
