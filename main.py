@@ -1,7 +1,5 @@
+import sys, threading, time, schedule, functools, multiprocessing
 from notifications import Notifications as ntf
-import threading, os, sched, time, schedule, functools
-import connectServer
-import sys, random, secrets
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtGui import *
 from PyQt6.QtWidgets import *
@@ -10,23 +8,21 @@ from WindowsReminder import Ui_Form
 from threading import Thread
 from connectServer import ClientSocket
 # from dotenv import load_dotenv
-from pystray import MenuItem as item
-from PIL import Image
 
-class NewWindowsReminder(QWidget, Ui_Form):
+class NewWindowsReminder(QtWidgets.QMainWindow, Ui_Form):
     def __init__(self, *args, text='text', descriptions='descriptions', link='link', **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        self.text = text
-        self.descriptions = descriptions
-        self.link = link
-        self.title.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.text}</span></p></body></html>")
-        self.description.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.descriptions}</span></p></body></html>")
-        self.linkButton.setText(f"{self.link}")
+        self.title.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{text}</span></p></body></html>")
+        self.description.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{descriptions}</span></p></body></html>")
+        self.linkButton.setText(f"""<a href="{link}">{link}/</a>'""")
 
-
-# class WindowsReminder(ntf):
-
+def start():
+    apps = QtWidgets.QApplication(sys.argv)
+    apps.setQuitOnLastWindowClosed(True)
+    w3 = NewWindowsReminder()
+    w3.show()
+    apps.exec()
 
 class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
 
@@ -35,8 +31,12 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.setupUi(self)
         self.serverCheckStatus = 0
         self.startCheck = 0
+        self.datacheck = {0:0}
         self.serverCheckErrors = str('отключенно')
-        self.colors='red'
+        self.colors = 'red'
+        self.textNotifications = {0:0}
+        self.timeNotifications = str()
+        self.lostReminder = []
         self.dataToConnect = {'login':0, 'loginAPI':0, 'addres':0, 'port':0}
         self.startButton.clicked.connect(lambda: self.start())
         self.resetButton.clicked.connect(lambda: self.stop())
@@ -73,6 +73,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
     def print_some_times(self):
         schedule.every(10).seconds.do(self.connect).tag('start')
         schedule.every(10).seconds.do(self.colorConnect).tag('start')
+        schedule.every(1).seconds.do(self.perebor).tag('start')
+        schedule.every(10).seconds.do(self.zapuskNotifications).tag('start')
         schedule.every(60).seconds.do(self.recheckconnect)
         while True:
             schedule.run_pending()
@@ -115,10 +117,6 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         except:
             print('tut oshibka')
 
-    def news(self, text='tet', descriptions='zes', link='lis'):
-        self.w2 = NewWindowsReminder(text=text, descriptions=descriptions, link=link)
-        self.w2.show()
-
     @catch_exceptions(cancel_on_failure=True)
     def connect(self):
         super().connectClientSocket()
@@ -156,26 +154,55 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         except ValueError:
             self.colorDef(text='неправильный порт', color='red')
             return True
-        # try:
-        #     if 63 > len(self.login) > 0:
-        #         print('proshlo')
-        #     else:
-        #         return True
-        # except:
-        #     return True
-        # try:
-        #     if 125 > len(self.loginAPI) > 0:
-        #         print('proshlo API')
-        #     else:
-        #         return True
-        # except:
-        #     return True
+        try:
+            if 63 > len(self.login) > 0:
+                pass
+            else:
+                return True
+        except:
+            return True
+        try:
+            if 125 > len(self.loginAPI) > 0:
+                pass
+            else:
+                return True
+        except:
+            return True
+        self.dataToConnect.update({'login': self.login, 'loginAPI': self.loginAPI, 'addres': self.addres, 'port': self.port})
 
     def stop(self):
         self.startButton.setEnabled(True)
         self.resetButton.setEnabled(False)
         self.colorDef(text='отключенно', color='red')
         schedule.clear()
+
+    def perebor(self):
+        if int((list(self.datacheck.keys())[0])) == 1:
+            self.sps = self.pereborJSON()
+            if self.sps == False:
+                return
+            # self.news()
+            self.lostReminder.append(self.sps)
+            self.datacheck.clear()
+            self.datacheck[0] = 0
+
+    def zapuskNotifications(self):
+        print(len(threading.enumerate()))
+        while len(self.lostReminder) > 0 and len(threading.enumerate()) < 3:
+            # dialog = QDialog()
+            # dialog.ui = Ui_MyDialog()
+            # dialog.ui.setupUi(dialog)
+
+            # dialog.exec_()
+            # self.poshel = NewWindowsReminder(self)
+            # self.poshel.show()
+
+            self.remind = Thread(target=start())
+            self.remind.start()
+            # self.remind.join(5.0)
+            self.lostReminder.pop(0)
+            # print(self.remind.is_alive())
+        print(threading.enumerate())
 
 if __name__=="__main__":
     app = QtWidgets.QApplication(sys.argv)

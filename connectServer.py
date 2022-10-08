@@ -25,7 +25,8 @@ class ClientSocket():
                 data = self.sock.recv(1024)
                 amount_received += 12
                 mess = json.loads(data)
-                print(f'Получено: {mess}')
+                self.datacheck = mess
+                print(f'Получено: {self.datacheck}')
         except:
             if self.serverCheckStatus==1:
                 self.colors = 'black'
