@@ -9,20 +9,17 @@ from threading import Thread
 from connectServer import ClientSocket
 # from dotenv import load_dotenv
 
-class NewWindowsReminder(QtWidgets.QMainWindow, Ui_Form):
-    def __init__(self, *args, text='text', descriptions='descriptions', link='link', **kwargs):
+class NewWindowsReminder(QtWidgets.QWidget, Ui_Form):
+    def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setupUi(self)
-        self.title.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{text}</span></p></body></html>")
-        self.description.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{descriptions}</span></p></body></html>")
-        self.linkButton.setText(f"""<a href="{link}">{link}/</a>'""")
+        self.title.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">TEXT</span></p></body></html>")
+        self.description.setText(f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">DESCRIPTIONS</span></p></body></html>")
+        self.linkButton.setText(f"""<a href="LINK">LINK/</a>'""")
 
-def start():
-    apps = QtWidgets.QApplication(sys.argv)
-    apps.setQuitOnLastWindowClosed(True)
-    w3 = NewWindowsReminder()
-    w3.show()
-    apps.exec()
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
 
 class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
 
@@ -37,6 +34,10 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.textNotifications = {0:0}
         self.timeNotifications = str()
         self.lostReminder = []
+        self.startApp()
+        self.w3 = NewWindowsReminder()
+        self.w3.show()
+        self.w3.hide()
         self.dataToConnect = {'login':0, 'loginAPI':0, 'addres':0, 'port':0}
         self.startButton.clicked.connect(lambda: self.start())
         self.resetButton.clicked.connect(lambda: self.stop())
@@ -74,7 +75,8 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         schedule.every(10).seconds.do(self.connect).tag('start')
         schedule.every(10).seconds.do(self.colorConnect).tag('start')
         schedule.every(1).seconds.do(self.perebor).tag('start')
-        schedule.every(10).seconds.do(self.zapuskNotifications).tag('start')
+        # schedule.every(10).seconds.do(self.zapuskNotifications).tag('start')
+        # schedule.every(10).seconds.do(self.startApp).tag('start')
         schedule.every(60).seconds.do(self.recheckconnect)
         while True:
             schedule.run_pending()
@@ -186,23 +188,37 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
             self.datacheck.clear()
             self.datacheck[0] = 0
 
+    def startApp(self):
+        lock = threading.Lock()
+        lock.acquire()
+        try:
+            self.nth = Thread(target=self.zapuskNotifications)
+            self.nth.start()
+        except:
+            self.colorDef(text='ошибка в потоке', color='red')
+        finally:
+            lock.release()
+
     def zapuskNotifications(self):
-        print(len(threading.enumerate()))
-        while len(self.lostReminder) > 0 and len(threading.enumerate()) < 3:
-            # dialog = QDialog()
-            # dialog.ui = Ui_MyDialog()
-            # dialog.ui.setupUi(dialog)
-
-            # dialog.exec_()
-            # self.poshel = NewWindowsReminder(self)
-            # self.poshel.show()
-
-            self.remind = Thread(target=start())
-            self.remind.start()
-            # self.remind.join(5.0)
-            self.lostReminder.pop(0)
-            # print(self.remind.is_alive())
-        print(threading.enumerate())
+        try:
+            while True:
+                while len(self.lostReminder) > 0:
+                    if self.w3.isVisible():
+                        time.sleep(5.0)
+                        continue
+                    else:
+                        self.w3.title.setText(
+                        f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.lostReminder[0][1]}</span></p></body></html>")
+                        self.w3.description.setText(
+                        f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.lostReminder[0][2]}</span></p></body></html>")
+                        self.w3.linkButton.setText(
+                        f"""<a href="{self.lostReminder[0][3]}">{self.lostReminder[0][3]}/</a>'""")
+                        self.lostReminder.pop(0)
+                        self.w3.show()
+                        self.otp()
+                time.sleep(5.0)
+        except:
+            self.colorDef(text='ошибка в данных JSON', color='red')
 
 if __name__=="__main__":
     app = QtWidgets.QApplication(sys.argv)
