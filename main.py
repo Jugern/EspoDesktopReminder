@@ -50,8 +50,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.login = self.lineLogin.text()
         self.loginAPI = self.lineLoginAPI.text()
         if self.validations():
-            print('ne proshlo')
-            self.colorDef(text='Неверные данные', color='red')
+            # self.colorDef(text='Неверные данные', color='red')
             return False
         self.startCheck = 1
         self.colorDef(text='соединение', color='#003942')
@@ -76,7 +75,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
     def print_some_times(self):
         schedule.every(10).seconds.do(self.connect).tag('start')
         schedule.every(10).seconds.do(self.colorConnect).tag('start')
-        schedule.every(1).seconds.do(self.perebor).tag('start')
+        schedule.every(10).seconds.do(self.perebor).tag('start')
         # schedule.every(10).seconds.do(self.zapuskNotifications).tag('start')
         # schedule.every(10).seconds.do(self.startApp).tag('start')
         schedule.every(60).seconds.do(self.recheckconnect)
@@ -182,16 +181,18 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
             self.colorDef(text='неправильный порт', color='red')
             return True
         try:
-            if 63 > len(self.login) > 0:
+            if 21 > len(self.login) > 0:
                 pass
             else:
+                self.colorDef(text='Логин, более 20 символов', color='red')
                 return True
         except:
             return True
         try:
-            if 125 > len(self.loginAPI) > 0:
+            if 25 > len(self.loginAPI) > 0:
                 pass
             else:
+                self.colorDef(text='Пароль, более 25 символов', color='red')
                 return True
         except:
             return True
@@ -239,11 +240,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
                         continue
                     else:
                         self.w3.title.setText(
-                        f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.lostReminder[0][1]}</span></p></body></html>")
+                            f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.lostReminder[0][1]}</span></p></body></html>")
                         self.w3.description.setText(
-                        f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.lostReminder[0][2]}</span></p></body></html>")
+                            f"<html><head/><body><p align=\"center\"><span style=\" font-size:10pt;\">{self.lostReminder[0][2]}</span></p></body></html>")
                         self.w3.linkButton.setText(
-                        f"""<a href="{self.lostReminder[0][3]}">{self.lostReminder[0][3]}/</a>'""")
+                            f"""<a href="{self.lostReminder[0][3]}">{self.lostReminder[0][3]}/</a>'""")
                         self.lostReminder.pop(0)
                         self.w3.show()
                         self.otp()
