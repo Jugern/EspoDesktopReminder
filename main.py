@@ -1,4 +1,4 @@
-import sys, threading, time, schedule, functools, multiprocessing
+import sys, threading, time, schedule, functools, os
 from notifications import Notifications as ntf
 from PyQt6 import QtWidgets, QtCore
 from PyQt6.QtGui import *
@@ -28,6 +28,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.setupUi(self)
         self.serverCheckStatus = 0
         self.startCheck = 0
+        self.checkStatus = 0
         self.datacheck = {0:0}
         self.serverCheckErrors = str('отключенно')
         self.colors = 'red'
@@ -50,6 +51,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.loginAPI = self.lineLoginAPI.text()
         if self.validations():
             print('ne proshlo')
+            self.colorDef(text='Неверные данные', color='red')
             return False
         self.startCheck = 1
         self.colorDef(text='соединение', color='#003942')
@@ -79,16 +81,26 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         # schedule.every(10).seconds.do(self.startApp).tag('start')
         schedule.every(60).seconds.do(self.recheckconnect)
         while True:
-            schedule.run_pending()
-            time.sleep(1)
+            if self.checkStatus == 0:
+                schedule.run_pending()
+                time.sleep(1)
+            else:
+                break
 
-    def notifications_and_serversocket(self, nachalo='ошибка', text='нет текста'):
+    def notifications_and_serversocket(self):
         lock = threading.Lock()
         lock.acquire()
         try:
-            self.nth = Thread(target=self.print_some_times)
-            self.nth.start()
+            if self.checkStatus == 0:
+                self.nth = Thread(target=self.print_some_times)
+                self.nth.start()
+            else:
+                print('return lock threading')
+                return
+        except:
+            self.colorDef(text='Ошибка главного потока', color='red')
         finally:
+            print('zakrilsya')
             lock.release()
 
     def closeEvent(self, event):#create tray
@@ -98,12 +110,25 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.tray.setVisible(True)
         self.menu = QMenu()
         self.example = QAction("Show")
-        self.example.triggered.connect(self.show)
+        self.example.triggered.connect(self.zapuskWindows)
         self.menu.addAction(self.example)
-        self.quit = QAction("Quit")
-        self.quit.triggered.connect(app.quit)
-        self.menu.addAction(self.quit)
+        self.quits = QAction("Quit")
+        self.quits.triggered.connect(self.vse)
+        self.menu.addAction(self.quits)
         self.tray.setContextMenu(self.menu)
+
+    def zapuskWindows(self):
+        self.tray.setVisible(False)
+        self.show()
+
+    def Close(self):
+        self.checkStatus = 1
+        schedule.clear()
+        app.quit()
+
+    def vse(self):
+        self.tray.setVisible(False)
+        self.close()
 
     def colorDef(self, text='ошибка', color='red'):
         self.label_2.setText(f"{text}")
@@ -177,6 +202,7 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
         self.resetButton.setEnabled(False)
         self.colorDef(text='отключенно', color='red')
         schedule.clear()
+        self.checkStatus = 0
 
     def perebor(self):
         if int((list(self.datacheck.keys())[0])) == 1:
@@ -187,6 +213,11 @@ class MainWindow(QtWidgets.QMainWindow, Ui_Dialog, ClientSocket, ntf):
             self.lostReminder.append(self.sps)
             self.datacheck.clear()
             self.datacheck[0] = 0
+        if int((list(self.datacheck.keys())[0])) == 2:
+            self.colorDef(text='неправильные данные', color='black')
+            schedule.clear()
+            self.checkStatus = 1
+            return
 
     def startApp(self):
         lock = threading.Lock()
@@ -225,4 +256,4 @@ if __name__=="__main__":
     app.setQuitOnLastWindowClosed(False)
     window = MainWindow()
     window.show()
-    app.exec()
+    sys.exit(app.exec())
